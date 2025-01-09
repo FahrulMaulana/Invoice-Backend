@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model pengguna {
+  id           String   @id @default(uuid()) @db.VarChar(36)
+  id_pegawai   String   @unique @db.VarChar(6)
+  nama_lengkap String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model pengguna_akses {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  id_pegawai String   @db.VarChar(6)
+  akses      EAkses
+  id_prodi   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model biodata_pengguna {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  id_pegawai String   @unique @db.VarChar(6)
+  email      String   @db.VarChar(255)
+  no_hp      String   @db.VarChar(16)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model jurnal {
+  id                  String               @id @default(uuid()) @db.VarChar(36)
+  judul               String
+  id_pegawai          String               @db.VarChar(6)
+  eissn               String               @db.VarChar(64)
+  pissn               String               @db.VarChar(64)
+  tahun_terbit        String               @db.VarChar(4)
+  frekuensi_terbitan  String               @db.VarChar(32)
+  alamat              String               @db.VarChar(255)
+  kota                String               @db.VarChar(64)
+  negara              String               @db.VarChar(64)
+  url_jurnal          String               @db.VarChar(255)
+  url_kontak          String               @db.VarChar(255)
+  url_reviewer        String               @db.VarChar(255)
+  url_dimensi         String?              @db.VarChar(255)
+  url_editor          String?              @db.VarChar(255)
+  url_statistik       String?              @db.VarChar(255)
+  url_etika_publikasi String               @db.VarChar(255)
+  url_oai_jurnal      String               @db.VarChar(255)
+  doi_jurnal          String               @db.VarChar(255)
+  url_pengindeks      String?              @db.VarChar(255)
+  username_ojs        String               @db.VarChar(64)
+  password_ojs        String               @db.VarChar(64)
+  status              EStatusJurnal        @default(DRAFT)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  jurnal_rumpun_ilmu  jurnal_rumpun_ilmu[]
+}
+
+model jurnal_rumpun_ilmu {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  id_jurnal   String   @db.VarChar(36)
+  nama_runpum String   @db.VarChar(128)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  jurnal      jurnal   @relation(fields: [id_jurnal], references: [id])
+}
+
+model syarat_jurnal {
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  sort          Int
+  syarat        String   @db.VarChar(512)
+  required_link Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model trx_syarat_jurnal {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  id_jurnal        String    @db.VarChar(36)
+  id_syarat_jurnal String    @db.VarChar(36)
+  checklist        Boolean
+  link             String?   @db.VarChar(255)
+  tanggapan        String?   @db.VarChar(255)
+  tanggapan_by     String?   @db.VarChar(6)
+  tanggapan_at     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model bobot_jurnal {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  sort      Int
+  bobot     String   @db.VarChar(512)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model trx_bobot_jurnal {
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  id_jurnal       String   @db.VarChar(36)
+  id_bobot_jurnal String   @db.VarChar(36)
+  tanggapan       String   @db.Text
+  createdBy       String   @db.VarChar(6)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum EAkses {
+  ADMIN
+  REVIEWER
+  LPPM
+  KEUANGAN
+  PENGELOLA_JURNAL
+}
+
+enum EStatusJurnal {
+  DRAFT
+  AJUAN
+  APPROVED
+  REJECTED
+}
