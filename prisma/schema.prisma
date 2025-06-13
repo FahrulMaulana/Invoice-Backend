@@ -7,121 +7,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model pengguna {
-  id           String   @id @default(uuid()) @db.VarChar(36)
-  id_pegawai   String   @unique @db.VarChar(6)
-  nama_lengkap String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt @default(now())
+  role      String?   @db.VarChar(20)
+  invoices  Invoice[]
 }
 
-model pengguna_akses {
-  id         String   @id @default(uuid()) @db.VarChar(36)
-  id_pegawai String   @db.VarChar(6)
-  akses      EAkses
-  id_prodi   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Company {
+  id        String    @id @default(uuid())
+  name      String
+  email     String
+  address   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invoices  Invoice[]
 }
 
-model biodata_pengguna {
-  id         String   @id @default(uuid()) @db.VarChar(36)
-  id_pegawai String   @unique @db.VarChar(6)
-  email      String   @db.VarChar(255)
-  no_hp      String   @db.VarChar(16)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Client {
+  id        String    @id @default(uuid())
+  legalName String
+  email     String
+  address   String
+  netTerms  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invoices  Invoice[]
 }
 
-model jurnal {
-  id                  String               @id @default(uuid()) @db.VarChar(36)
-  judul               String
-  id_pegawai          String               @db.VarChar(6)
-  eissn               String               @db.VarChar(64)
-  pissn               String               @db.VarChar(64)
-  tahun_terbit        String               @db.VarChar(4)
-  frekuensi_terbitan  String               @db.VarChar(32)
-  alamat              String               @db.VarChar(255)
-  kota                String               @db.VarChar(64)
-  negara              String               @db.VarChar(64)
-  url_jurnal          String               @db.VarChar(255)
-  url_kontak          String               @db.VarChar(255)
-  url_reviewer        String               @db.VarChar(255)
-  url_dimensi         String?              @db.VarChar(255)
-  url_editor          String?              @db.VarChar(255)
-  url_statistik       String?              @db.VarChar(255)
-  url_etika_publikasi String               @db.VarChar(255)
-  url_oai_jurnal      String               @db.VarChar(255)
-  doi_jurnal          String               @db.VarChar(255)
-  url_pengindeks      String?              @db.VarChar(255)
-  username_ojs        String               @db.VarChar(64)
-  password_ojs        String               @db.VarChar(64)
-  status              EStatusJurnal        @default(DRAFT)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  jurnal_rumpun_ilmu  jurnal_rumpun_ilmu[]
+model Product {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  invoiceItems InvoiceItem[]
 }
 
-model jurnal_rumpun_ilmu {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  id_jurnal   String   @db.VarChar(36)
-  nama_runpum String   @db.VarChar(128)
+model PaymentMethod {
+  id         String    @id @default(uuid())
+  methodName String
+  info       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  invoices   Invoice[]
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  invoiceNumber   String         @unique
+  date            DateTime       @default(now())
+  dueDate         DateTime
+  status          InvoiceStatus  @default(UNPAID)
+  subtotal        Float?
+  companyId       String
+  clientId        String
+  paymentMethodId String?
+  userId          String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  toClient        Client         @relation(fields: [clientId], references: [id])
+  fromCompany     Company        @relation(fields: [companyId], references: [id])
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
+  items           InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  productId   String
+  customPrice Float?
+  quantity    Int
+  total       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  jurnal      jurnal   @relation(fields: [id_jurnal], references: [id])
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
 }
 
-model syarat_jurnal {
-  id            String   @id @default(uuid()) @db.VarChar(36)
-  sort          Int
-  syarat        String   @db.VarChar(512)
-  required_link Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+enum InvoiceStatus {
+  PAID
+  UNPAID
+  DUE
+  BAD_DEBT
 }
 
-model trx_syarat_jurnal {
-  id               String    @id @default(uuid()) @db.VarChar(36)
-  id_jurnal        String    @db.VarChar(36)
-  id_syarat_jurnal String    @db.VarChar(36)
-  checklist        Boolean
-  link             String?   @db.VarChar(255)
-  tanggapan        String?   @db.VarChar(255)
-  tanggapan_by     String?   @db.VarChar(6)
-  tanggapan_at     DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+enum ERole {
+  SU 
 }
 
-model bobot_jurnal {
-  id        String   @id @default(uuid()) @db.VarChar(36)
-  sort      Int
-  bobot     String   @db.VarChar(512)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model trx_bobot_jurnal {
-  id              String   @id @default(uuid()) @db.VarChar(36)
-  id_jurnal       String   @db.VarChar(36)
-  id_bobot_jurnal String   @db.VarChar(36)
-  tanggapan       String   @db.Text
-  createdBy       String   @db.VarChar(6)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-enum EAkses {
-  ADMIN
-  REVIEWER
-  LPPM
-  KEUANGAN
-  PENGELOLA_JURNAL
-}
-
-enum EStatusJurnal {
-  DRAFT
-  AJUAN
-  APPROVED
-  REJECTED
-}

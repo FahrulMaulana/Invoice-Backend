@@ -1,7 +1,9 @@
 import { ERole } from '../enums/ERole'
 
 export class UserPayload {
-  username: string
+  id: string
+
+  name: string
 
   email: string
 

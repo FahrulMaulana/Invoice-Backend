@@ -1,0 +1,8 @@
+{
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "eslint.validate": ["javascript"],
+    "typescript.updateImportsOnFileMove.enabled": "always"
+  }
