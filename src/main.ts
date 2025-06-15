@@ -1,10 +1,10 @@
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common'
 import { NestFactory, Reflector } from '@nestjs/core'
-import { AppModule } from './app.module'
-import { SwaggerApiDocs } from './docs/swagger-api.docs'
-import { env } from 'process'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common'
+import { env } from 'process'
+import { AppModule } from './app.module'
+import { SwaggerApiDocs } from './docs/swagger-api.docs'
 import { ErrorsInterceptor } from './errors.interceptors'
 
 async function bootstrap() {
@@ -28,6 +28,6 @@ async function bootstrap() {
 
   await app.listen(3000)
 
-  console.log(`Application is running on: http://localhost:3000`)
+  console.log(`Application is running on: http://localhost:3001`)
 }
 bootstrap()
