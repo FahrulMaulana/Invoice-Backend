@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
@@ -36,7 +36,7 @@ export class CompanyController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Put('/company/:id')
+  @Patch('/company/:id')
   async update(@Param('id') id: string, @Body() body: companyPostDto) {
     const data = await this.company.updatecompany(id, body)
     const response = new responseDto()

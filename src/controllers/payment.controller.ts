@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
@@ -36,7 +36,7 @@ export class PaymentController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Put('/paymentMethod/:id')
+  @Patch('/paymentMethod/:id')
   async update(@Param('id') id: string, @Body() body: paymentMethodPostDto) {
     const data = await this.paymentMethod.updatepaymentMethod(id, body)
     const response = new responseDto()

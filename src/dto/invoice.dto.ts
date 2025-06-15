@@ -1,5 +1,5 @@
 import { Expose, Type } from 'class-transformer'
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 import { EStatus } from 'src/common/enums/EStatus'
 import { productIdDto } from './product.dto'
 
@@ -18,11 +18,6 @@ export class invoicePostDto {
   @IsString()
   @IsNotEmpty()
   paymentMethodId: string
-
-  @Expose()
-  @IsString()
-  @IsNotEmpty()
-  userId: string
 
   @Expose()
   @IsArray()
@@ -76,4 +71,51 @@ export class invoiceUpdateDto {
   @Expose()
   @IsEnum(EStatus)
   status: EStatus
+}
+
+export class invoiceFilterDto {
+  @Expose()
+  @IsOptional()
+  @IsEnum(EStatus)
+  status?: EStatus
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  month?: string
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  paymentMethodId?: string
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  companyId?: string
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  clientId?: string
+}
+
+export class invoiceActionDto {
+  @Expose()
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  invoiceIds: string[]
+}
+
+export class invoiceEmailDto {
+  @Expose()
+  @IsNotEmpty()
+  @IsString()
+  invoiceId: string
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  message?: string
 }

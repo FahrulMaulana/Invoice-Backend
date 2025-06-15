@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
+import { User } from 'src/common/decorator/User'
 import { ERole } from 'src/common/enums/ERole'
-import { invoiceGetDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
+import { Userpayload } from 'src/dto/auth.dto'
+import { invoiceActionDto, invoiceEmailDto, invoiceFilterDto, invoiceGetDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
 import { responseDto } from 'src/dto/respon.dto'
 import { InvoiceService } from 'src/services/iinvoice.service'
 
@@ -14,17 +16,18 @@ export class InvoiceController {
 
   @ApiBearerAuth([ERole.SU])
   @Get('/invoice')
-  async list() {
-    const data = await this.invoice.listinvoice()
+  async list(@Query() filters: invoiceFilterDto) {
+    const data = await this.invoice.listinvoice(filters)
     return plainToInstance(invoiceGetDto, data)
   }
 
   @ApiBearerAuth([ERole.SU])
   @Post('/invoice')
-  async create(@Body() body: invoicePostDto) {
-    const data = await this.invoice.getinvoice(body)
+  async create(@Body() body: invoicePostDto, @User() user: Userpayload) {
+    const { id } = user
+    const data = await this.invoice.getinvoice(body, id)
     const response = new responseDto()
-    response.message = 'invoice Successfully Cretaed'
+    response.message = 'Invoice Successfully Created'
     return response
   }
 
@@ -36,11 +39,11 @@ export class InvoiceController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Put('/invoice/:id')
+  @Patch('/invoice/:id')
   async update(@Param('id') id: string, @Body() body: invoiceUpdateDto) {
     const data = await this.invoice.updateinvoice(id, body)
     const response = new responseDto()
-    response.message = 'invoice Successfully Updated'
+    response.message = 'Invoice Successfully Updated'
     return response
   }
 
@@ -49,7 +52,43 @@ export class InvoiceController {
   async delete(@Param('id') id: string) {
     const data = await this.invoice.deleteinvoice(id)
     const response = new responseDto()
-    response.message = 'invoice Successfully Deleted'
+    response.message = 'Invoice Successfully Deleted'
+    return response
+  }
+
+  @ApiBearerAuth([ERole.SU])
+  @Patch('/invoice/mark-as-paid/:id')
+  async markAsPaid(@Param('id') id: string) {
+    await this.invoice.updateInvoicesStatus(id)
+    const response = new responseDto()
+    response.message = 'Invoices Successfully Marked as Paid'
+    return response
+  }
+
+  @ApiBearerAuth([ERole.SU])
+  @Get('/invoice/mark-as/:id')
+  async markAsBadDebt(@Param('id') id: string) {
+    await this.invoice.updateInvoicesStatusDebt(id)
+    const response = new responseDto()
+    response.message = 'Invoices Successfully Marked as Bad Debt'
+    return response
+  }
+
+  @ApiBearerAuth([ERole.SU])
+  @Post('/invoice/send-email')
+  async sendEmail(@Body() body: invoiceEmailDto) {
+    await this.invoice.sendInvoiceEmail(body.invoiceId, body.message)
+    const response = new responseDto()
+    response.message = 'Invoice Email Successfully Sent'
+    return response
+  }
+
+  @ApiBearerAuth([ERole.SU])
+  @Post('/invoice/action/delete-multiple')
+  async deleteMultiple(@Body() body: invoiceActionDto) {
+    await this.invoice.deleteMultipleInvoices(body.invoiceIds)
+    const response = new responseDto()
+    response.message = 'Invoices Successfully Deleted'
     return response
   }
 }

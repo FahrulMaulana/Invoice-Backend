@@ -75,6 +75,7 @@ model Invoice {
   paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
   user            User           @relation(fields: [userId], references: [id])
   items           InvoiceItem[]
+  emailLogs       EmailLog[]
 }
 
 model InvoiceItem {
@@ -90,11 +91,40 @@ model InvoiceItem {
   product     Product  @relation(fields: [productId], references: [id])
 }
 
+model EmailAutomation {
+  id         String            @id @default(uuid())
+  type       EmailAutomationType
+  enabled    Boolean           @default(false)
+  daysBefore Int?
+  daysAfter  Int?
+  subject    String
+  body       String            @db.Text
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model EmailLog {
+  id         String             @id @default(uuid())
+  invoiceId  String
+  type       EmailAutomationType
+  sentAt     DateTime           @default(now())
+  recipient  String
+  subject    String
+  body       String             @db.Text
+  invoice    Invoice            @relation(fields: [invoiceId], references: [id])
+}
+
 enum InvoiceStatus {
   PAID
   UNPAID
   DUE
   BAD_DEBT
+}
+
+enum EmailAutomationType {
+  BEFORE_DUE
+  ON_DUE
+  AFTER_DUE
 }
 
 enum ERole {

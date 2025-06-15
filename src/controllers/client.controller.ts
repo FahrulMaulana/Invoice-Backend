@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
 import { ERole } from 'src/common/enums/ERole'
-import { ClientPostDto } from 'src/dto/client.dto'
+import { ClienGetDto, ClientPostDto } from 'src/dto/client.dto'
 import { responseDto } from 'src/dto/respon.dto'
 import { ClientService } from 'src/services/clients.service'
 
@@ -16,7 +16,7 @@ export class ClientController {
   @Get('/clients')
   async list() {
     const data = await this.client.listClient()
-    return plainToInstance(ClientPostDto, data)
+    return plainToInstance(ClienGetDto, data)
   }
 
   @ApiBearerAuth([ERole.SU])
@@ -36,7 +36,7 @@ export class ClientController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Put('/clients/:id')
+  @Patch('/clients/:id')
   async update(@Param('id') id: string, @Body() body: ClientPostDto) {
     const data = await this.client.updateClient(id, body)
     const response = new responseDto()
