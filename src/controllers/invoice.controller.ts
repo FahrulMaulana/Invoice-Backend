@@ -5,7 +5,7 @@ import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
 import { User } from 'src/common/decorator/User'
 import { ERole } from 'src/common/enums/ERole'
 import { Userpayload } from 'src/dto/auth.dto'
-import { invoiceActionDto, invoiceEmailDto, invoiceFilterDto, invoiceGetDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
+import { invoiceActionDto, invoiceFilterDto, invoiceGetDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
 import { responseDto } from 'src/dto/respon.dto'
 import { InvoiceService } from 'src/services/iinvoice.service'
 
@@ -66,7 +66,7 @@ export class InvoiceController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Get('/invoice/mark-as/:id')
+  @Patch('/invoice/mark-as-debt/:id')
   async markAsBadDebt(@Param('id') id: string) {
     await this.invoice.updateInvoicesStatusDebt(id)
     const response = new responseDto()
@@ -75,9 +75,9 @@ export class InvoiceController {
   }
 
   @ApiBearerAuth([ERole.SU])
-  @Post('/invoice/send-email')
-  async sendEmail(@Body() body: invoiceEmailDto) {
-    await this.invoice.sendInvoiceEmail(body.invoiceId, body.message)
+  @Patch('/invoice/send-email/:id')
+  async sendEmail(@Param('id') id: string) {
+    await this.invoice.sendInvoiceEmail(id)
     const response = new responseDto()
     response.message = 'Invoice Email Successfully Sent'
     return response

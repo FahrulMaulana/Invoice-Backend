@@ -1,18 +1,26 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InvoiceStatus } from '@prisma/client'
+import * as nodemailer from 'nodemailer'
 import { invoiceFilterDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { PrismaService } from './prisma.service'
 
 @Injectable()
 export class InvoiceService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(InvoiceService.name)
+  private transporter: nodemailer.Transporter
+
+  constructor(private prisma: PrismaService) {
+    // We'll initialize the transporter when needed to avoid issues at startup
+  }
 
   async listinvoice(filters?: invoiceFilterDto) {
     const { status, month, paymentMethodId, companyId, clientId } = filters || {}
 
     // Build the where clause based on filters
     const where: any = {}
+
+    where.isdeleted = false
 
     if (status) {
       where.status = status
@@ -79,6 +87,7 @@ export class InvoiceService {
         clientId: body.clientId,
         paymentMethodId: body.paymentMethodId,
         userId: id,
+        isdeleted: false,
       },
     })
 
@@ -178,9 +187,12 @@ export class InvoiceService {
       throw new BadRequestException('invoice not found')
     }
 
-    return await this.prisma.invoice.delete({
+    return await this.prisma.invoice.update({
       where: {
         id,
+      },
+      data: {
+        isdeleted: true, // Soft delete
       },
     })
   }
@@ -234,7 +246,8 @@ export class InvoiceService {
   }
 
   async sendInvoiceEmail(invoiceId: string, message?: string) {
-    // First, verify the invoice exists and get all the needed information
+    this.logger.log(`Attempting to send invoice email for invoice: ${invoiceId}`)
+
     const invoice = await this.prisma.invoice.findFirst({
       where: {
         id: invoiceId,
@@ -251,26 +264,116 @@ export class InvoiceService {
     })
 
     if (!invoice) {
+      this.logger.error(`Invoice not found: ${invoiceId}`)
       throw new BadRequestException('Invoice not found')
     }
 
-    // Here you would typically integrate with an email service
-    // For now, we'll just log the information as a placeholder
-    console.log(`Email would be sent to: ${invoice.toClient.email}`)
-    console.log(`From: ${invoice.fromCompany.email}`)
-    console.log(`Subject: Invoice ${invoice.invoiceNumber}`)
-    console.log(`Invoice Amount: ${invoice.subtotal}`)
-    console.log(`Message: ${message || 'Please find the attached invoice.'}`)
+    // Setup transporter (Ethereal Email)
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    })
 
-    // In a real implementation, you would:
-    // 1. Generate a PDF of the invoice
-    // 2. Send an email with the PDF attachment
-    // 3. Possibly mark the invoice as sent in the database
+    try {
+      const info = await transporter.sendMail({
+        from: '"Invoice System" <maddison53@ethereal.email>',
+        to: invoice.toClient.email,
+        subject: `Invoice #${invoice.invoiceNumber} from ${invoice.fromCompany.name}`,
+        text: `Dear ${invoice.toClient.legalName},
 
-    return {
-      sent: true,
-      to: invoice.toClient.email,
-      invoiceNumber: invoice.invoiceNumber,
+        Invoice #${invoice.invoiceNumber}
+        Date: ${new Date(invoice.date).toLocaleDateString()}
+        Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}
+
+        Total Amount: $${invoice?.subtotal?.toFixed(2)}
+
+        ${message || 'Thank you for your business. Please find your invoice details above.'}
+
+        Regards,
+        ${invoice.fromCompany.name}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+            <div style="text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+              <h2 style="color: #2a3f54; margin: 0;">Invoice #${invoice.invoiceNumber}</h2>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+              <p>Dear ${invoice.toClient.legalName},</p>
+              <p>${message || 'Please find your invoice details below. Thank you for your business.'}</p>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+              <div>
+                <h4 style="color: #2a3f54; margin-top: 0;">From:</h4>
+                <p style="margin: 0;">${invoice.fromCompany.name}</p>
+                <p style="margin: 0;">${invoice.fromCompany.email || ''}</p>
+              </div>
+              <div>
+                <h4 style="color: #2a3f54; margin-top: 0;">To:</h4>
+                <p style="margin: 0;">${invoice.toClient.legalName}</p>
+                <p style="margin: 0;">${invoice.toClient.email || ''}</p>
+              </div>
+              <div>
+                <h4 style="color: #2a3f54; margin-top: 0;">Details:</h4>
+                <p style="margin: 0;"><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString()}</p>
+                <p style="margin: 0;"><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
+                <p style="margin: 0;"><strong>Status:</strong> <span style="color: ${
+                  invoice.status === 'PAID' ? '#27ae60' : invoice.status === 'UNPAID' ? '#e74c3c' : '#f39c12'
+                };">${invoice.status}</span></p>
+              </div>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <thead>
+                <tr style="background-color: #f8f9fa;">
+                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Item</th>
+                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #eee;">Quantity</th>
+                  <th style="padding: 12px; text-align: right; border-bottom: 2px solid #eee;">Price</th>
+                  <th style="padding: 12px; text-align: right; border-bottom: 2px solid #eee;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${invoice.items
+                  .map(
+                    (item) => `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product.name}</td>
+                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">${item.quantity}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">$${(item.customPrice || 0).toFixed(2)}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">$${(item.total || 0).toFixed(2)}</td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">Subtotal:</td>
+                  <td style="padding: 10px; text-align: right; font-weight: bold;">$${invoice?.subtotal?.toFixed(2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+            
+            <div style="margin-top: 30px; background-color: #f8f9fa; padding: 15px; border-radius: 4px;">
+              <p style="margin: 0;">Thank you for your business. If you have any questions about this invoice, please contact us.</p>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #6c757d;">
+              <p>This is an automatically generated email. Please do not reply to this message.</p>
+            </div>
+          </div>
+        `,
+      })
+
+      this.logger.log(`Message sent: ${info.messageId}`)
+    } catch (error) {
+      this.logger.error(`Send Error: ${error.message}`)
+      throw new BadRequestException('Failed to send invoice email')
     }
   }
 

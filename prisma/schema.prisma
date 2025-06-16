@@ -70,6 +70,7 @@ model Invoice {
   userId          String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  isdeleted       Boolean        @default(false)
   toClient        Client         @relation(fields: [clientId], references: [id])
   fromCompany     Company        @relation(fields: [companyId], references: [id])
   paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
