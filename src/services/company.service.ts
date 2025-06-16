@@ -111,18 +111,14 @@ export class CompanyService {
 
   async updatecompany(file: Express.Multer.File, id: string, body: companyPostDto) {
     let savedFileNameSK = ''
-    console.log(1)
 
     if (file) {
-      console.log(2)
-
       this.validateFile(file)
       const nama = file.originalname
       const fileExtension = nama.split('.').pop()?.toLowerCase()
       savedFileNameSK = `${uuidv4()}.${fileExtension}`
       const filePathSK = join(__dirname, '..', '../public', savedFileNameSK)
       await promises.writeFile(filePathSK, file.buffer, 'binary')
-      console.log(3)
     }
     const data = await this.prisma.company.findFirst({
       where: {
@@ -146,9 +142,6 @@ export class CompanyService {
     if (!cek_id) {
       throw new BadRequestException('Company Not Found')
     }
-
-    console.log(4)
-    console.log(savedFileNameSK)
 
     return await this.prisma.company.update({
       where: {
