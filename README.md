@@ -20,20 +20,70 @@ Invoice Manager is a full-featured backend service for business invoicing needs.
 - 📧 Email automation
 - 🏢 Company profile management
 
-## Installation
+## Detailed Installation Guide
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- PostgreSQL (v12 or higher)
+- Git
+
+### Step 1: Clone the Repository
 
 ```bash
-# Install dependencies
-$ npm install
+# Clone the repository
+$ git clone https://github.com/yourusername/invoice-manager.git
 
-# Set up environment variables
-$ cp .env.example .env
-# Then edit .env with your configuration
+# Navigate to the project directory
+$ cd invoice-manager/Backend
 ```
 
-## Database Setup
+### Step 2: Install Dependencies
 
-This project uses Prisma ORM with PostgreSQL:
+```bash
+# Install all required packages
+$ npm install
+```
+
+### Step 3: Environment Setup
+
+```bash
+# Create environment file from template
+$ cp .env.example .env
+
+# Open the file with your preferred editor
+$ nano .env  # or use any text editor
+```
+
+Configure the following variables in your `.env` file:
+
+```
+# Database Connection
+DATABASE_URL="postgresql://username:password@localhost:5432/invoice_manager?schema=public"
+
+# JWT Authentication
+JWT_SECRET="your-secret-key"
+JWT_EXPIRES_IN="1d"
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Email Configuration (if using email features)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-email-password
+SMTP_FROM=noreply@yourdomain.com
+
+# Base URL for logo/image paths in PDF invoices
+BASE_URL=http://localhost:3000
+```
+
+### Step 4: Database Setup
+
+Ensure your PostgreSQL server is running, then:
 
 ```bash
 # Apply database migrations
@@ -43,18 +93,18 @@ $ npx prisma migrate dev
 $ npx prisma generate
 ```
 
-## Running the app
+### Step 5: Start the Application
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
+# Development mode
 $ npm run start:dev
 
-# production mode
+# Production build
+$ npm run build
 $ npm run start:prod
 ```
+
+The application will be available at http://localhost:3000 (or the PORT you configured in .env)
 
 ## API Documentation
 
