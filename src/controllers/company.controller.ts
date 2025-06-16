@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiConsumes, ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
 import { ERole } from 'src/common/enums/ERole'
@@ -21,8 +22,11 @@ export class CompanyController {
 
   @ApiBearerAuth([ERole.SU])
   @Post('/company')
-  async create(@Body() body: companyPostDto) {
-    const data = await this.company.getcompany(body)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  async create(@UploadedFile() file: Express.Multer.File, @Body() body: companyPostDto) {
+    const data = await this.company.getcompany(file, body)
     const response = new responseDto()
     response.message = 'company Successfully Cretaed'
     return response
@@ -37,8 +41,10 @@ export class CompanyController {
 
   @ApiBearerAuth([ERole.SU])
   @Patch('/company/:id')
-  async update(@Param('id') id: string, @Body() body: companyPostDto) {
-    const data = await this.company.updatecompany(id, body)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async update(@UploadedFile() file: Express.Multer.File, @Param('id') id: string, @Body() body: companyPostDto) {
+    const data = await this.company.updatecompany(file, id, body)
     const response = new responseDto()
     response.message = 'company Successfully Updated'
     return response

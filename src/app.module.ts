@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
 import { AuthController } from './controllers/auth.controller'
 import { ClientController } from './controllers/client.controller'
 import { CompanyController } from './controllers/company.controller'
@@ -20,7 +23,15 @@ import { PrismaModule } from './services/prisma.module'
 import { ProductService } from './services/product.service'
 
 @Module({
-  imports: [PrismaModule, ScheduleModule.forRoot()],
+  imports: [
+    ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      exclude: ['/api*', '/file*'],
+    }),
+    PrismaModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [
     HelloController,
     AuthController,

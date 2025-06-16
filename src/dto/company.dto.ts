@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
-import { IsString } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 
 export class companyPostDto {
   @Expose()
@@ -11,6 +12,11 @@ export class companyPostDto {
   @Expose()
   @IsString()
   address: string
+  @Expose()
+  @IsOptional()
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  @IsOptional()
+  file: string
 }
 
 export class companyGetDto {
@@ -26,4 +32,8 @@ export class companyGetDto {
   @Expose()
   @IsString()
   address: string
+  @Expose()
+  @IsOptional()
+  @IsString()
+  file: string
 }

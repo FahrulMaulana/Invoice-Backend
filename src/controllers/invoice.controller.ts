@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Res } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { plainToInstance } from 'class-transformer'
 import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
@@ -90,5 +90,25 @@ export class InvoiceController {
     const response = new responseDto()
     response.message = 'Invoices Successfully Deleted'
     return response
+  }
+
+  @ApiBearerAuth([ERole.SU])
+  @Patch('/invoice/generate-pdf/:id')
+  async generatePDF(@Param('id') id: string, @Res() res) {
+    try {
+      const pdfBuffer = await this.invoice.generatePDF(id)
+
+      // Set response headers for PDF download
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="invoice-${id}.pdf"`,
+        'Content-Length': pdfBuffer.length,
+      })
+
+      // Send the PDF as the response
+      res.send(pdfBuffer)
+    } catch (error) {
+      throw new BadRequestException(`Failed to generate PDF: ${error.message}`)
+    }
   }
 }
