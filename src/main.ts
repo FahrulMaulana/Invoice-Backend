@@ -22,18 +22,21 @@ import { SwaggerApiDocs } from './docs/swagger-api.docs'
 import { ErrorsInterceptor } from './errors.interceptors'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: true, // Enable built-in body parser
+  })
 
   // Static Assets
   app.useStaticAssets(join(__dirname, '..', 'public'))
   app.setViewEngine('html')
 
+  app.enableCors()
   /* Global Interceptor */
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector), { excludeExtraneousValues: true }))
   app.useGlobalInterceptors(new ErrorsInterceptor())
 
   /* Global Validation */
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }))
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, transformOptions: { enableImplicitConversion: true } }))
 
   /* Swagger */
   if (env.APP_ENV !== 'prod') {
