@@ -113,6 +113,8 @@ model EmailLog {
   recipient  String
   subject    String
   body       String             @db.Text
+  status     String?            @default("LOGGED") // Tracks email delivery status: SENT, LOGGED, FAILED
+  error      String?            @db.Text           // Stores error details if email fails to send
   invoice    Invoice            @relation(fields: [invoiceId], references: [id])
 }
 
