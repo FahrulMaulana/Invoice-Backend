@@ -441,11 +441,13 @@ export class InvoiceService {
 
     try {
       // Launch a headless browser
+      const isProduction = process.env.APP_ENV !== 'local'
+
       const browser = await puppeteer.launch({
         headless: true,
+        executablePath: isProduction ? '/snap/bin/chromium' : undefined,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       })
-
       // Create a new page
       const page = await browser.newPage()
 
