@@ -424,6 +424,7 @@ export class InvoiceService {
       include: {
         toClient: true,
         fromCompany: true,
+        paymentMethod: true,
         items: {
           include: {
             product: true,
@@ -488,292 +489,91 @@ export class InvoiceService {
       }
 
       // Generate HTML content for the invoice with improved design
+      // Generate HTML content for the invoice with Tailwind-style design using pure CSS
       const htmlContent = `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
-        <meta charset="utf-8">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Invoice ${invoice.invoiceNumber}</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-          
-          :root {
-            --primary-color: #3498db;
-            --secondary-color: #2980b9;
-            --accent-color: #f1c40f;
-            --text-color: #34495e;
-            --light-gray: #ecf0f1;
-            --dark-gray: #7f8c8d;
-            --success-color: #27ae60;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --border-radius: 8px;
-          }
-          
-          * {
+          /* Reset */
+          *, ::before, ::after {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb;
           }
           
           body {
-            font-family: 'Poppins', Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            color: var(--text-color);
-            background-color: white;
-            position: relative;
+            line-height: 1.5;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
           }
           
-          .invoice-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-            position: relative;
-            min-height: 100vh;
+          p {
+            margin: 0;
           }
-          
-          .invoice-content {
-            padding-bottom: 150px; /* Space for thank you and footer */
-          }
-          
-          .invoice-top {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            align-items: center;
-          }
-          
-          .company-logo-container {
-            max-width: 200px;
-            display: flex;
-            align-items: center;
-          }
-          
-          .company-logo-image {
-            max-width: 100%;
-            max-height: 80px;
-            object-fit: contain;
-          }
-          
-          .company-logo-text {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--primary-color);
-            display: inline-block;
-          }
-          
-          .invoice-info {
-            text-align: right;
-          }
-          
-          .invoice-title {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-          }
-          
-          .invoice-number {
-            font-size: 16px;
-            color: var(--dark-gray);
-            margin-bottom: 5px;
-          }
-          
-          .invoice-date {
-            font-size: 14px;
-            color: var(--dark-gray);
-          }
-          
-          .invoice-parties {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            padding: 30px;
-            background-color: var(--light-gray);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-          }
-          
-          .party {
-            width: 45%;
-          }
-          
-          .party-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 5px;
-            display: inline-block;
-          }
-          
-          .party-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-          }
-          
-          .party-details {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-color);
-          }
-          
-          .invoice-meta {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
-          }
-          
-          .meta-item {
-            text-align: center;
-            flex: 1;
-          }
-          
-          .meta-title {
-            text-transform: uppercase;
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 5px;
-            opacity: 0.8;
-          }
-          
-          .meta-value {
-            font-size: 16px;
-            font-weight: 600;
-          }
-          
-          .invoice-table-container {
-            margin-bottom: 30px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-          }
-          
-          .invoice-table {
-            width: 100%;
+
+          table {
+            text-indent: 0;
+            border-color: inherit;
             border-collapse: collapse;
           }
           
-          .invoice-table th {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-          }
+          /* Layout */
+          .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+          .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+          .py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+          .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+          .px-14 { padding-left: 3.5rem; padding-right: 3.5rem; }
+          .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+          .p-3 { padding: 0.75rem; }
+          .pb-3 { padding-bottom: 0.75rem; }
+          .pl-2 { padding-left: 0.5rem; }
+          .pl-3 { padding-left: 0.75rem; }
+          .pl-4 { padding-left: 1rem; }
+          .pr-3 { padding-right: 0.75rem; }
+          .pr-4 { padding-right: 1rem; }
           
-          .invoice-table th:last-child,
-          .invoice-table td:last-child {
-            text-align: right;
-          }
+          /* Table */
+          .w-full { width: 100%; }
+          .w-1\/2 { width: 50%; }
+          .h-12 { height: 3rem; }
+          .border-collapse { border-collapse: collapse; }
+          .border-spacing-0 { border-spacing: 0px; }
+          .whitespace-nowrap { white-space: nowrap; }
+          .border-b { border-bottom-width: 1px; }
+          .border-b-2 { border-bottom-width: 2px; }
+          .border-r { border-right-width: 1px; }
+          .align-top { vertical-align: top; }
           
-          .invoice-table td {
-            padding: 15px;
-            border-bottom: 1px solid var(--light-gray);
-            font-size: 14px;
-          }
+          /* Text */
+          .text-center { text-align: center; }
+          .text-right { text-align: right; }
+          .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+          .text-xs { font-size: 0.75rem; line-height: 1rem; }
+          .font-bold { font-weight: 700; }
+          .italic { font-style: italic; }
           
-          .invoice-table tr:nth-child(even) {
-            background-color: rgba(236, 240, 241, 0.5);
-          }
+          /* Colors */
+          .bg-main { background-color: #5c6ac4; }
+          .bg-slate-100 { background-color: #f1f5f9; }
+          .text-main { color: #5c6ac4; }
+          .text-neutral-600 { color: #525252; }
+          .text-neutral-700 { color: #404040; }
+          .text-slate-300 { color: #cbd5e1; }
+          .text-slate-400 { color: #94a3b8; }
+          .text-white { color: #fff; }
+          .border-main { border-color: #5c6ac4; }
           
-          .invoice-table tr:hover {
-            background-color: rgba(236, 240, 241, 0.8);
-          }
+          /* Positioning */
+          .fixed { position: fixed; }
+          .bottom-0 { bottom: 0px; }
+          .left-0 { left: 0px; }
           
-          .text-center { text-align: center !important; }
-          .text-right { text-align: right !important; }
-          
-          .totals-container {
-            margin-left: auto;
-            width: 350px;
-            margin-bottom: 40px;
-          }
-          
-          .totals-table {
-            width: 100%;
-            font-size: 14px;
-          }
-          
-          .totals-table td {
-            padding: 8px 15px;
-          }
-          
-          .totals-table tr.total-row td {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-          }
-          
-          .thank-you {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 10px;
-            position: absolute;
-            bottom: 80px;
-            left: 0;
-            right: 0;
-          }
-          
-          .footer {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            margin-top: 15px;
-            border-top: 1px solid var(--light-gray);
-            padding-top: 20px;
-            font-size: 14px;
-            color: var(--dark-gray);
-            text-align: center;
-          }
-          
-          .payment-info {
-            margin-top: 30px;
-            background-color: var(--light-gray);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            font-size: 14px;
-            line-height: 1.6;
-            box-shadow: var(--shadow);
-          }
-          
-          .payment-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-          }
-          
-          .status-badge {
-            display: inline-block;
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 14px;
-            color: white;
-            background-color: ${getStatusColor(invoice.status)};
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-          
+          /* Status Stamps */
           .paid-stamp, .unpaid-stamp, .bad-debt-stamp {
             position: absolute;
             top: 50%;
@@ -791,134 +591,190 @@ export class InvoiceService {
           }
           
           .paid-stamp {
-            color: var(--success-color);
-            border: 10px solid var(--success-color);
+            color: #27ae60;
+            border: 10px solid #27ae60;
             opacity: ${invoice.status === 'PAID' ? 0.3 : 0};
           }
           
           .unpaid-stamp {
-            color: var(--danger-color);
-            border: 10px solid var(--danger-color);
+            color: #e74c3c;
+            border: 10px solid #e74c3c;
             opacity: ${invoice.status === 'UNPAID' ? 0.3 : 0};
           }
           
           .bad-debt-stamp {
-            color: var(--warning-color);
-            border: 10px solid var(--warning-color);
+            color: #f39c12;
+            border: 10px solid #f39c12;
             opacity: ${invoice.status === 'BAD_DEBT' ? 0.3 : 0};
           }
           
-          .barcode {
-            text-align: center;
-            margin-top: 30px;
-            font-family: 'Libre Barcode 39', cursive;
-            font-size: 60px;
-            line-height: 1;
-            color: var(--text-color);
+          /* Print settings */
+          @page { margin: 0; }
+          @media print {
+            body { -webkit-print-color-adjust: exact; }
           }
         </style>
       </head>
+
       <body>
-        <div class="invoice-wrapper">
-          <div class="paid-stamp">PAID</div>
-          <div class="unpaid-stamp">UNPAID</div>
-          <div class="bad-debt-stamp">BAD DEBT</div>
-          
-          <div class="invoice-content">
-            <div class="invoice-top">
-              <div class="company-logo-container">
-                ${
-                  invoice.fromCompany.file
-                    ? `<img src="${process.env.BASE_URL || 'http://localhost:3001'}/${invoice.fromCompany.file}" alt="${
-                        invoice.fromCompany.name
-                      } Logo" class="company-logo-image">`
-                    : `<div class="company-logo-text">${invoice.fromCompany.name}</div>`
-                }
-              </div>
-              
-              <div class="invoice-info">
-                <div class="invoice-title">INVOICE</div>
-                <div class="invoice-number"># ${invoice.invoiceNumber}</div>
-                <div class="invoice-date">Issued: ${formatDate(invoice.date)}</div>
-                <div class="invoice-date">Due: ${formatDate(invoice.dueDate)}</div>
-              </div>
+        <div>        
+          <div class="py-4">
+            <div class="px-14 py-6">
+              <table class="w-full border-collapse border-spacing-0">
+                <tbody>
+                  <tr>
+                    <td class="w-full align-top">
+                      <div>
+                        ${
+                          invoice.fromCompany.file
+                            ? `<img src="${process.env.BASE_URL || 'http://localhost:3001'}/${invoice.fromCompany.file}" alt="${
+                                invoice.fromCompany.name
+                              } Logo" class="h-12">`
+                            : `<div class="text-main font-bold">${invoice.fromCompany.name}</div>`
+                        }
+                      </div>
+                    </td>
+
+                    <td class="align-top">
+                      <div class="text-sm">
+                        <table class="border-collapse border-spacing-0">
+                          <tbody>
+                            <tr>
+                              <td class="border-r pr-4">
+                                <div>
+                                  <p class="whitespace-nowrap text-slate-400 text-right">Date</p>
+                                  <p class="whitespace-nowrap font-bold text-main text-right">${formatDate(invoice.date)}</p>
+                                </div>
+                              </td>
+                              <td class="pl-4">
+                                <div>
+                                  <p class="whitespace-nowrap text-slate-400 text-right">Invoice #</p>
+                                  <p class="whitespace-nowrap font-bold text-main text-right">${invoice.invoiceNumber}</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            
-            <div class="invoice-parties">
-              <div class="party">
-                <div class="party-title">From</div>
-                <div class="party-name">${invoice.fromCompany.name}</div>
-                <div class="party-details">
-                  ${invoice.fromCompany.email ? `<div>${invoice.fromCompany.email}</div>` : ''}
-                  ${invoice.fromCompany.address ? `<div>${invoice.fromCompany.address}</div>` : ''}
-                </div>
-              </div>
-              
-              <div class="party">
-                <div class="party-title">Bill To</div>
-                <div class="party-name">${invoice.toClient.legalName}</div>
-                <div class="party-details">
-                  ${invoice.toClient.email ? `<div>${invoice.toClient.email}</div>` : ''}
-                  ${invoice.toClient.address ? `<div>${invoice.toClient.address}</div>` : ''}
-                </div>
-              </div>
+
+            <div class="bg-slate-100 px-14 py-6 text-sm">
+              <table class="w-full border-collapse border-spacing-0">
+                <tbody>
+                  <tr>
+                    <td class="w-1/2 align-top">
+                      <div class="text-sm text-neutral-600">
+                        <p class="font-bold">${invoice.fromCompany.name}</p>
+                        ${invoice.fromCompany.email ? `<p>${invoice.fromCompany.email}</p>` : ''}
+                        ${invoice.fromCompany.address ? `<p>${invoice.fromCompany.address}</p>` : ''}
+                      </div>
+                    </td>
+                    <td class="w-1/2 align-top text-right">
+                      <div class="text-sm text-neutral-600">
+                        <p class="font-bold">${invoice.toClient.legalName}</p>
+                        ${invoice.toClient.email ? `<p>${invoice.toClient.email}</p>` : ''}
+                        ${invoice.toClient.address ? `<p>${invoice.toClient.address}</p>` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            
-            <div class="invoice-table-container">
-              <table class="invoice-table">
+
+            <div class="px-14 py-10 text-sm text-neutral-700">
+              <table class="w-full border-collapse border-spacing-0">
                 <thead>
                   <tr>
-                    <th style="width: 45%;">Item Description</th>
-                    <th class="text-center" style="width: 15%;">Quantity</th>
-                    <th class="text-right" style="width: 20%;">Price</th>
-                    <th class="text-right" style="width: 20%;">Total</th>
+                    <td class="border-b-2 border-main pb-3 pl-3 font-bold text-main">#</td>
+                    <td class="border-b-2 border-main pb-3 pl-2 font-bold text-main">Product details</td>
+                    <td class="border-b-2 border-main pb-3 pl-2 text-right font-bold text-main">Price</td>
+                    <td class="border-b-2 border-main pb-3 pl-2 text-center font-bold text-main">Qty.</td>
+                    <td class="border-b-2 border-main pb-3 pl-2 text-right font-bold text-main">Subtotal</td>
                   </tr>
                 </thead>
                 <tbody>
                   ${invoice.items
                     .map(
-                      (item) => `
+                      (item, index) => `
                     <tr>
-                      <td>
+                      <td class="border-b py-3 pl-3">${index + 1}.</td>
+                      <td class="border-b py-3 pl-2">
                         <div style="font-weight: 500;">${item.product.name}</div>
-                        <div style="font-size: 12px; color: var(--dark-gray);">${item.product.description || ''}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">${item.product.description || ''}</div>
                       </td>
-                      <td class="text-center">${item.quantity}</td>
-                      <td class="text-right">${formatCurrency(item.customPrice || 0)}</td>
-                      <td class="text-right">${formatCurrency(item.total || 0)}</td>
+                      <td class="border-b py-3 pl-2 text-right">${formatCurrency(item.customPrice || 0)}</td>
+                      <td class="border-b py-3 pl-2 text-center">${item.quantity}</td>
+                      <td class="border-b py-3 pl-2 pr-3 text-right">${formatCurrency(item.total || 0)}</td>
                     </tr>
                   `
                     )
                     .join('')}
+                  <tr>
+                    <td colspan="5">
+                      <table class="w-full border-collapse border-spacing-0">
+                        <tbody>
+                          <tr>
+                            <td class="w-full"></td>
+                            <td>
+                              <table class="w-full border-collapse border-spacing-0">
+                                <tbody>
+                                  <tr>
+                                    <td class="border-b p-3">
+                                      <div class="whitespace-nowrap text-slate-400">Subtotal:</div>
+                                    </td>
+                                    <td class="border-b p-3 text-right">
+                                      <div class="whitespace-nowrap font-bold text-main">${formatCurrency(subtotal)}</div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="bg-main p-3">
+                                      <div class="whitespace-nowrap font-bold text-white">Total:</div>
+                                    </td>
+                                    <td class="bg-main p-3 text-right">
+                                      <div class="whitespace-nowrap font-bold text-white">${formatCurrency(subtotal)}</div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-            
-            <div class="totals-container">
-              <table class="totals-table">
-                <tr>
-                  <td>Subtotal:</td>
-                  <td class="text-right">${formatCurrency(subtotal)}</td>
-                </tr>
-                <tr class="total-row">
-                  <td>Total:</td>
-                  <td class="text-right">${formatCurrency(subtotal)}</td>
-                </tr>
-              </table>
+
+            <div class="px-14 text-sm text-neutral-700">
+              <p class="text-main font-bold">PAYMENT DETAILS</p>
+              <p>Status: <span style="color: ${getStatusColor(invoice.status)};">${invoice.status}</span></p>
+              <p>Due Date: ${formatDate(invoice.dueDate)}</p>
+              <p>Payment Method: ${invoice.paymentMethod?.methodName || 'Not specified'}</p>
+              <p>Payment Reference: ${invoice.invoiceNumber}</p>
             </div>
+
+            <div class="px-14 py-10 text-sm text-neutral-700">
+              <p class="text-main font-bold">Notes</p>
+              <p class="italic">Thank you for your business. If you have any questions about this invoice, please contact us.</p>
+            </div>
+
+            <footer class="fixed bottom-0 left-0 bg-slate-100 w-full text-neutral-600 text-center text-xs py-3">
+              ${invoice.fromCompany.name}
+              <span class="text-slate-300 px-2">|</span>
+              ${invoice.fromCompany.email || ''}
+              <span class="text-slate-300 px-2">|</span>
+              © ${new Date().getFullYear()} All rights reserved.
+            </footer>
           </div>
-          
-          <div class="thank-you">Thank You for Your Business!</div>
-          
-          <div class="footer">
-            <p>If you have any questions concerning this invoice, please contact us at ${invoice.fromCompany.email || '[Company Email]'}</p>
-            <p>© ${new Date().getFullYear()} ${invoice.fromCompany.name} - All rights reserved.</p>
-          </div>
-        
         </div>
       </body>
       </html>
-    `
+      `
 
       // Set content to the page
       await page.setContent(htmlContent)
