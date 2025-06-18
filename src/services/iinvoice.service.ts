@@ -432,8 +432,6 @@ export class InvoiceService {
       },
     })
 
-    console.log(invoice)
-
     if (!invoice) {
       this.logger.error(`Invoice not found: ${invoiceId}`)
       throw new BadRequestException('Invoice not found')
@@ -460,7 +458,7 @@ export class InvoiceService {
         }).format(amount || 0)
       }
 
-      // Calculate totals
+      // Calculate totalsx
       const subtotal = invoice.subtotal || 0
       const tax = subtotal * 0.1 // Assuming 10% tax
       const total = subtotal + tax

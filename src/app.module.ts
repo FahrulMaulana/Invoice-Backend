@@ -8,6 +8,7 @@ import { ClientController } from './controllers/client.controller'
 import { CompanyController } from './controllers/company.controller'
 import { EmailAutomationController } from './controllers/email-automation.controller'
 import { HelloController } from './controllers/hello.controller'
+import { InvoiceGeneratorController } from './controllers/invoice-genartor.controller'
 import { InvoiceController } from './controllers/invoice.controller'
 import { PaymentController } from './controllers/payment.controller'
 import { ProductController } from './controllers/product.controller'
@@ -18,6 +19,7 @@ import { EmailAutomationService } from './services/email-automation.service'
 import { EmailSchedulerService } from './services/email-scheduler.service'
 import { HelloService } from './services/hello.service'
 import { InvoiceService } from './services/iinvoice.service'
+import { InvoiceGeneratorService } from './services/invoice-generator.service'
 import { PaymentService } from './services/payment.service'
 import { PrismaModule } from './services/prisma.module'
 import { ProductService } from './services/product.service'
@@ -43,6 +45,7 @@ import { ProductService } from './services/product.service'
     PaymentController,
     InvoiceController,
     EmailAutomationController,
+    InvoiceGeneratorController,
   ],
   providers: [
     HelloService,
@@ -54,6 +57,8 @@ import { ProductService } from './services/product.service'
     InvoiceService,
     EmailAutomationService,
     EmailSchedulerService,
+    InvoiceService,
+    InvoiceGeneratorService,
   ],
 })
 export class AppModule {}
