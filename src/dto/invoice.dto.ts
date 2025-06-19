@@ -98,6 +98,11 @@ export class invoiceFilterDto {
   @IsOptional()
   @IsString()
   clientId?: string
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  productId?: string
 }
 
 export class invoiceActionDto {

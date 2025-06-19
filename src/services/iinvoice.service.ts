@@ -16,7 +16,7 @@ export class InvoiceService {
   }
 
   async listinvoice(filters?: invoiceFilterDto) {
-    const { status, month, paymentMethodId, companyId, clientId } = filters || {}
+    const { status, month, paymentMethodId, companyId, clientId, productId } = filters || {}
 
     // Build the where clause based on filters
     const where: any = {}
@@ -50,6 +50,14 @@ export class InvoiceService {
       where.clientId = clientId
     }
 
+    if (productId) {
+      where.items = {
+        some: {
+          productId,
+        },
+      }
+    }
+
     return await this.prisma.invoice.findMany({
       where,
       include: {
@@ -57,6 +65,11 @@ export class InvoiceService {
         paymentMethod: true,
         fromCompany: true,
         toClient: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
       },
       orderBy: {
         status: 'asc',
