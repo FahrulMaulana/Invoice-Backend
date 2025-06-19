@@ -764,16 +764,23 @@ export class InvoiceService {
             </div>
 
             <div class="px-14 text-sm text-neutral-700">
-              <p class="text-main font-bold">PAYMENT DETAILS</p>
               <p>Status: <span style="color: ${getStatusColor(invoice.status)};">${invoice.status}</span></p>
               <p>Due Date: ${formatDate(invoice.dueDate)}</p>
-              <p>Payment Method: ${invoice.paymentMethod?.methodName || 'Not specified'}</p>
-              <p>Payment Reference: ${invoice.invoiceNumber}</p>
+              <p class="text-main font-bold">PAYMENT DETAILS</p>
+              ${
+                invoice.paymentMethod?.info
+                  ? `<div style="white-space: pre-line; margin-top: -5px; line-height: 1.3;">
+                      ${invoice.paymentMethod.info.replace(/\\n/g, '<br>')}
+                    </div>`
+                  : '<p style="margin-top: -5px;">Not specified</p>'
+              }
             </div>
-
             <div class="px-14 py-10 text-sm text-neutral-700">
               <p class="text-main font-bold">Notes</p>
-              <p class="italic">Thank you for your business. If you have any questions about this invoice, please contact us.</p>
+              <p class="italic">We appreciate your business.
+              For any queries or clarifications, don’t hesitate to contact us.
+              Kindly ensure the invoice is settled before the due date.
+              Please be aware that overdue payments may result in a temporary pause in services.</p>
             </div>
 
             <footer class="fixed bottom-0 left-0 bg-slate-100 w-full text-neutral-600 text-center text-xs py-3">
