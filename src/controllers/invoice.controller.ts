@@ -5,7 +5,7 @@ import { ApiBearerAuth } from 'src/common/decorator/ApiBearerAuth'
 import { User } from 'src/common/decorator/User'
 import { ERole } from 'src/common/enums/ERole'
 import { Userpayload } from 'src/dto/auth.dto'
-import { invoiceActionDto, invoiceFilterDto, invoiceGetDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
+import { invoiceActionDto, invoiceFilterDto, invoiceGetDto, invoicePostDto, invoicePutDto } from 'src/dto/invoice.dto'
 import { responseDto } from 'src/dto/respon.dto'
 import { InvoiceService } from 'src/services/iinvoice.service'
 
@@ -40,7 +40,7 @@ export class InvoiceController {
 
   @ApiBearerAuth([ERole.SU])
   @Patch('/invoice/:id')
-  async update(@Param('id') id: string, @Body() body: invoiceUpdateDto) {
+  async update(@Param('id') id: string, @Body() body: invoicePutDto) {
     const data = await this.invoice.updateinvoice(id, body)
     const response = new responseDto()
     response.message = 'Invoice Successfully Updated'

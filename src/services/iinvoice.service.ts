@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InvoiceStatus } from '@prisma/client'
 import * as nodemailer from 'nodemailer'
 import puppeteer from 'puppeteer'
-import { invoiceFilterDto, invoicePostDto, invoiceUpdateDto } from 'src/dto/invoice.dto'
+import { invoiceFilterDto, invoicePostDto, invoicePutDto } from 'src/dto/invoice.dto'
 import { v4 as uuidv4 } from 'uuid'
 import { PrismaService } from './prisma.service'
 
@@ -169,10 +169,15 @@ export class InvoiceService {
     return data
   }
 
-  async updateinvoice(id: string, body: invoiceUpdateDto) {
+  async updateinvoice(id: string, body: invoicePutDto) {
+    console.log(body)
+
     const cek_id = await this.prisma.invoice.findFirst({
       where: {
         id,
+      },
+      include: {
+        items: true,
       },
     })
 
@@ -180,14 +185,96 @@ export class InvoiceService {
       throw new BadRequestException('invoice not found')
     }
 
-    return await this.prisma.invoice.update({
+    // Update invoice details
+    const data = await this.prisma.invoice.update({
       where: {
         id,
       },
       data: {
-        status: body.status,
+        date: new Date(body.date),
+        dueDate: new Date(body.dueDate),
+        status: body.status || cek_id.status, // Keep existing status if not provided
+        companyId: body.companyId,
+        clientId: body.clientId,
+        paymentMethodId: body.paymentMethodId,
       },
     })
+
+    if (!data) {
+      throw new BadRequestException('Failed to update invoice')
+    }
+
+    // Get existing item IDs for comparison
+    const existingItemIds = cek_id.items.map((item) => item.id)
+    const updatedItemIds = body.products.filter((p) => p.id && p.id.length > 30).map((p) => p.id)
+
+    // Find items to delete (items in DB but not in request)
+    const itemsToDelete = existingItemIds.filter((id) => !updatedItemIds.includes(id))
+
+    // Delete removed items
+    if (itemsToDelete.length > 0) {
+      await this.prisma.invoiceItem.deleteMany({
+        where: {
+          id: {
+            in: itemsToDelete,
+          },
+        },
+      })
+    }
+
+    // Process each product in the request
+    const items = await Promise.all(
+      body.products.map(async (item) => {
+        const totalPrice = item.customerPrice * item.quantity
+
+        // If item has a valid UUID, update it
+        if (item.id && item.id.length > 30 && existingItemIds.includes(item.id)) {
+          // Update existing item
+          return await this.prisma.invoiceItem.update({
+            where: {
+              id: item.id,
+            },
+            data: {
+              productId: item.productId, // Support both formats
+              quantity: item.quantity,
+              customPrice: item.customerPrice,
+              total: totalPrice,
+            },
+          })
+        } else {
+          // Create new item
+          return await this.prisma.invoiceItem.create({
+            data: {
+              id: uuidv4(),
+              invoiceId: data.id,
+              productId: item.productId, // Support both formats
+              quantity: item.quantity,
+              customPrice: item.customerPrice,
+              total: totalPrice,
+            },
+          })
+        }
+      })
+    )
+
+    // Calculate new subtotal
+    const subtotal = items.map((item) => item.total).reduce((a, b) => a + b, 0)
+
+    // Update invoice with new subtotal
+    const updatedInvoice = await this.prisma.invoice.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        subtotal,
+      },
+    })
+
+    if (!updatedInvoice) {
+      throw new BadRequestException('Failed to update invoice with items')
+    }
+
+    return updatedInvoice
   }
 
   async deleteinvoice(id: string) {

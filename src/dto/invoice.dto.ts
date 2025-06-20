@@ -124,3 +124,55 @@ export class invoiceEmailDto {
   @IsString()
   message?: string
 }
+
+class product {
+  @Expose()
+  @IsString()
+  id: string
+
+  @Expose()
+  @IsString()
+  productId: string
+
+  @Expose()
+  @IsNumber()
+  quantity: number
+
+  @Expose()
+  @IsNumber()
+  customerPrice: number
+}
+export class invoicePutDto {
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  companyId: string
+
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  clientId: string
+
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  paymentMethodId: string
+
+  @Expose()
+  @IsOptional()
+  @IsEnum(EStatus)
+  status?: EStatus
+
+  @Expose()
+  @IsString()
+  date: string
+
+  @Expose()
+  @IsString()
+  dueDate: string
+
+  @Expose()
+  @IsArray()
+  @Type(() => product)
+  products: product[]
+}
